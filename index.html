@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BCIT Campus Directions</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <meta charset="utf-8">
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places"></script>
+
+    <script>
+function initialize() {
+  var mapOptions = {
+    center: new google.maps.LatLng(49.2577354,-123.1239135),
+    zoom: 12
+  };
+  var map = new google.maps.Map(document.getElementById('map-canvas'),
+    mapOptions);
+
+  var input = /** @type {HTMLInputElement} */(
+      document.getElementById('pac-input'));
+
+  var destination = {"lat":49.184882,"lng":-123.144895};
+  var campus = document.getElementById('campus');
+  var instructions = document.getElementById('directionsPanel');
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+  map.controls[google.maps.ControlPosition.LEFT].push(campus);
+   map.controls[google.maps.ControlPosition.RIGHT].push(campus);
+
+  var autocomplete = new google.maps.places.Autocomplete(input);
+  autocomplete.bindTo('bounds', map);
+
+  var directionsDisplay;
+  var directionsService = new google.maps.DirectionsService();
+
+  directionsDisplay = new google.maps.DirectionsRenderer();
+  directionsDisplay.setMap(map);
+  directionsDisplay.setPanel(document.getElementById('directionsPanel'));
+
+
+  function calcRoute(dest_lonlat) {
+  
+    var place = autocomplete.getPlace();
+    var orig = place.geometry.location;
+    var dest = new google.maps.LatLng(dest_lonlat["lat"], dest_lonlat["lng"]);
+    var request = {
+      origin: orig,
+      destination: dest,
+      // Note that Javascript allows us to access the constant
+      // using square brackets and a string value as its
+      // "property."
+      travelMode: google.maps.TravelMode["DRIVING"]
+  };
+
+  directionsService.route(request, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    }
+  });
+}
+
+
+  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+    var place = autocomplete.getPlace();
+    if (!place.geometry) {
+      return;
+    }
+
+    // If the place has a geometry, then present it on a map.
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+    } else {
+      // map.setCenter(place.geometry.location);
+      // map.setZoom(17);  // Why 17? Because it looks good.
+    }
+          calcRoute(destination);
+
+  
+
+    var address = '';
+    if (place.address_components) {
+      address = [
+        (place.address_components[0] && place.address_components[0].short_name || ''),
+        (place.address_components[1] && place.address_components[1].short_name || ''),
+        (place.address_components[2] && place.address_components[2].short_name || '')
+      ].join(' ');
+    }
+
+    
+  });
+
+  // Sets a listener on a radio button to change the filter type on Places
+  // Autocomplete.
+  function setupClickListener(id, location) {
+    var radioButton = document.getElementById(id);
+    google.maps.event.addDomListener(radioButton, 'click', function() {
+      calcRoute(location);
+      destination = location;
+    });
+  }
+
+  setupClickListener('radio1', {"lat":49.184882,"lng":-123.144895});
+  setupClickListener('radio2', {"lat":49.248499,"lng":-123.001375});
+  setupClickListener('radio3', {"lat":49.283451,"lng":-123.115255});
+  setupClickListener('radio4', {"lat":49.267486,"lng":-123.090338});
+  setupClickListener('radio5', {"lat":49.312575,"lng":-123.086372});
+
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+  </head>
+  <body>
+    <input id="pac-input" class="controls" type="text"
+        placeholder="Enter a location">
+    <div id="campus" class="card controls">
+    <h1> Campus:</h1>
+  <label class="radio">
+    <input id="radio1" type="radio" name="radios" checked>
+    <span class="outer"><span class="inner"></span></span>Aerospace Technology</label>
+  <label class="radio">
+    <input id="radio2" type="radio" name="radios">
+    <span class="outer"><span class="inner"></span></span>Burnaby</label>
+  <label class="radio">
+    <input id="radio3" type="radio" name="radios">
+    <span class="outer"><span class="inner"></span></span>Downtown</label>
+  <label class="radio">
+    <input id="radio4" type="radio" name="radios">
+    <span class="outer"><span class="inner"></span></span>Great Northern Way</label>
+  <label class="radio">
+    <input id="radio5" type="radio" name="radios">
+    <span class="outer"><span class="inner"></span></span>Marine</label>
+    </div>
+    <div id="directionsPanel" style="float:right;width:30%;height 100%"></div>
+    <div id="map-canvas"></div>
+  </body>
+</html>
